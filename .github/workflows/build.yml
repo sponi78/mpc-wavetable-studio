@@ -75,7 +75,7 @@ jobs:
             --windowed \
             --onedir \
             --name "MPC Wavetable Studio" \
-            mpc_wavetable_studio.py
+            mpc_wavetable_splitter.py
 
       - name: Zip macOS App
         run: |
