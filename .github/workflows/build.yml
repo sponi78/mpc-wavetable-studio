@@ -1,10 +1,9 @@
-name: Build MPC Wavetable Studio
+name: Build MPC Wavetable Splitter
 
 on:
   push:
-    branches: [main]
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -12,50 +11,52 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install dependencies
-        shell: bash
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
+          if exist requirements.txt (
             pip install -r requirements.txt
-          fi
+          )
           pip install pyinstaller
 
-      - name: Build Windows
-        shell: bash
+      - name: Build Windows EXE
         run: |
-          pyinstaller \
-            --noconfirm \
-            --clean \
-            --windowed \
-            --onedir \
-            --name "MPC Wavetable Studio" \
+          pyinstaller ^
+            --noconfirm ^
+            --clean ^
+            --windowed ^
+            --onedir ^
+            --name "MPC Wavetable Splitter" ^
             mpc_wavetable_splitter.py
+        shell: cmd
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v4
         with:
-          name: MPC-Wavetable-Studio-Windows
-          path: dist/MPC\ Wavetable\ Studio/
+          name: MPC-Wavetable-Splitter-Windows
+          path: dist/MPC Wavetable Splitter/
 
   build-macos:
     strategy:
       matrix:
-        runner:
-          - macos-15
-          - macos-15-intel
+        os: [macos-15, macos-15-intel]
 
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -67,23 +68,24 @@ jobs:
           fi
           pip install pyinstaller
 
-      - name: Build macOS
+      - name: Build macOS App
         run: |
           pyinstaller \
             --noconfirm \
             --clean \
             --windowed \
             --onedir \
-            --name "MPC Wavetable Studio" \
+            --name "MPC Wavetable Splitter" \
             mpc_wavetable_splitter.py
 
-      - name: Zip macOS App
+      - name: Create ZIP
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
-            "dist/MPC Wavetable Studio.app" \
-            "MPC-Wavetable-Studio-${{ matrix.runner }}.zip"
+            "dist/MPC Wavetable Splitter.app" \
+            "MPC-Wavetable-Splitter-${{ matrix.os }}.zip"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload macOS Build
+        uses: actions/upload-artifact@v4
         with:
-          name: MPC-Wavetable-Studio-${{ matrix.runner }}
-          path: MPC-Wavetable-Studio-${{ matrix.runner }}.zip
+          name: MPC-Wavetable-Splitter-${{ matrix.os }}
+          path: MPC-Wavetable-Splitter-${{ matrix.os }}.zip
